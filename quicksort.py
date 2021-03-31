@@ -1,19 +1,15 @@
 from time import process_time
-import random
+import numpy as np
 
 
-def insertion_sort(num_list):
-    for i in range(1, len(num_list)):
+def slice_insertion_sort(num_list, start, end):
+    for i in range(start+1, end+1):
+        val = num_list[i]
         j = i
-
-        # Insert num_list[i] into sorted part
-        # stopping once num_list[i] in correct position
-        while j > 0 and num_list[j] < num_list[j - 1]:
-            # Swap num_list[j] and num_list[j - 1]
-            temp = num_list[j]
-            num_list[j] = num_list[j - 1]
-            num_list[j - 1] = temp
+        while j > start and num_list[j-1] > val:
+            num_list[j] = num_list[j-1]
             j -= 1
+        num_list[j] = val
 
 
 def partition(numbers, start_index, end_index):
@@ -68,11 +64,44 @@ def quicksort(numbers, start_index, end_index):
     quicksort(numbers, high + 1, end_index)
 
 
+def revised_quicksort(numbers, start_index, end_index, threshold):
+    # Only attempt to sort the list segment if there are
+    # at least 2 elements
+    if end_index <= start_index:
+        return
+    if end_index - start_index <= threshold:
+        slice_insertion_sort(numbers, start_index, end_index)
+        return
+    # Partition the list segment
+    high = partition(numbers, start_index, end_index)
+
+    # Recursively sort the left segment
+    revised_quicksort(numbers, start_index, high, threshold)
+
+    # Recursively sort the right segment
+    revised_quicksort(numbers, high + 1, end_index, threshold)
+
+
 # Main program to test the quicksort algorithm.
-numbers = [12, 18, 3, 7, 32, 14, 91, 16, 8, 57]
-print('UNSORTED:', numbers)
-q_time_start = process_time()
-quicksort(numbers, 0, len(numbers)-1)
-q_time_stop = process_time()
-print('SORTED:', numbers)
-print('Elapsed Time: ', q_time_stop - q_time_stop)
+def compare_quicksorts(threshold, size):
+    numbers = list(np.random.randint(low=1, high=1000, size=size))
+    numbers2 = numbers
+    #print('UNSORTED:', numbers)
+    q1_time_start = process_time()
+    quicksort(numbers, 0, len(numbers)-1)
+    q1_time_stop = process_time()
+    q1_total = q1_time_stop - q1_time_start
+    q2_time_start = process_time()
+    revised_quicksort(numbers2, 0, len(numbers)-1, threshold)
+    q2_time_stop = process_time()
+    q2_total = q2_time_stop - q2_time_start
+
+    if q1_total > q2_total:
+        print("Revised quicksort({}) faster than Quicksort by {}".format(
+            threshold, q1_total - q2_total))
+    else:
+        print("Quicksort faster than Revised quicksort({}) by {}".format(
+            threshold, q2_total - q1_total))
+
+
+compare_quicksorts(10, 200)
