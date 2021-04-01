@@ -1,5 +1,5 @@
-from time import process_time
 import numpy as np
+import timeit
 
 
 def slice_insertion_sort(num_list, start, end):
@@ -85,23 +85,21 @@ def revised_quicksort(numbers, start_index, end_index, threshold):
 # Main program to test the quicksort algorithm.
 def compare_quicksorts(threshold, size):
     numbers = list(np.random.randint(low=1, high=1000, size=size))
-    numbers2 = numbers
-    #print('UNSORTED:', numbers)
-    q1_time_start = process_time()
-    quicksort(numbers, 0, len(numbers)-1)
-    q1_time_stop = process_time()
-    q1_total = q1_time_stop - q1_time_start
-    q2_time_start = process_time()
-    revised_quicksort(numbers2, 0, len(numbers)-1, threshold)
-    q2_time_stop = process_time()
-    q2_total = q2_time_stop - q2_time_start
+    numbers2 = numbers.copy()
+    # print('UNSORTED:', numbers)
+    q1_time = timeit.timeit(
+        lambda: quicksort(numbers, 0, len(numbers)-1), globals=globals(), number=10)
+    q2_time = timeit.timeit(
+        lambda: revised_quicksort(numbers2, 0, len(numbers)-1, threshold), globals=globals(), number=10)
 
-    if q1_total > q2_total:
-        print("Revised quicksort({}) faster than Quicksort by {}".format(
-            threshold, q1_total - q2_total))
+    if q1_time > q2_time:
+        print("Revised quicksort({}) faster than Quicksort by {} sec.".format(
+            threshold, q1_time - q2_time))
     else:
-        print("Quicksort faster than Revised quicksort({}) by {}".format(
-            threshold, q2_total - q1_total))
+        print("Quicksort faster than Revised quicksort({}) by {} sec.".format(
+            threshold, q2_time - q1_time))
 
 
-compare_quicksorts(10, 200)
+compare_quicksorts(10, 20000)
+compare_quicksorts(100, 20000)
+compare_quicksorts(1000, 20000)
